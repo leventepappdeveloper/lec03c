@@ -29,10 +29,14 @@ Every script was saved in `prob1/`, run to confirm it works, and committed and p
 | `prob1/06_train.py` | 20-epoch training; saves `prob1/outputs/history.json` and `model.pt` |
 | `prob1/07_plot_accuracy.py` | Learning curves, saved as `prob1/figures/accuracy.png` |
 | `prob1/08_evaluate.py` | Test accuracy and predictions for 3 validation images |
+| `prob1/run_all.py` | Runs steps 1–8 in order from the terminal |
 
-Run the scripts from the repo root in order, for example `python3 prob1/06_train.py`.
-Steps 7 and 8 read the files saved by step 6, so run step 6 first. The Fashion MNIST
-files download into `datasets/`, which `.gitignore` keeps out of git.
+Each script is written as a Jupyter notebook cell. Paste them into a notebook saved in
+the repo root, one script per cell, in order 1–8. Each cell uses names defined by the cells
+before it, such as `torch`, `train_loader` and `model`. From the terminal, run
+`python3 prob1/run_all.py` from the repo root; it runs the 8 scripts in order in one shared
+namespace, the same way a notebook does. Steps 7 and 8 read the files saved by step 6. The
+Fashion MNIST files download into `datasets/`, which `.gitignore` keeps out of git.
 
 ## Step by step
 
@@ -59,8 +63,7 @@ DataLoaders with batch size 32, and print the dataset sizes and the shape of one
 
 **Done:** `T.Compose([T.ToImage(), T.ToDtype(torch.float32, scale=True)])`, then
 `random_split` with seed 42. Train, validation and test loaders, with only the training
-loader shuffled. Step 1 is loaded with `importlib.import_module("01_setup")`, because a
-module name can't start with a digit in an `import` statement.
+loader shuffled.
 
 **Result:**
 ```
@@ -90,7 +93,7 @@ keys are `train_losses`, `train_metrics` and `valid_metrics`. Changes from the n
 the function is called `train`, the progress line says "accuracy", and the model is put back
 in training mode once per epoch instead of once per batch.
 
-**Result:** Running the file directly trained a simple one-layer model for 3 epochs on 2,000
+**Result:** The end of the script trains a simple one-layer model for 3 epochs on 2,000
 training and 500 validation images as a quick test. Training loss fell each epoch (1.22 →
 0.73), and `evaluate_tm` gave the same validation accuracy as the last history entry (0.7460).
 
@@ -154,6 +157,27 @@ As in the notebook, the top-4 probabilities come from a softmax over only the 4 
 scores, so they add up to 1 for each image. The model is confident on the sneaker and the coat
 and much less sure about the pullover. Pullover, coat and shirt look alike in 28×28 grayscale,
 and Fashion MNIST models usually confuse them most.
+
+### Converting the scripts into notebook cells
+**Problem:** When the scripts were pasted into a Jupyter notebook, the Step 2 cell failed with
+`ModuleNotFoundError: No module named '01_setup'`. The scripts had been written as separate
+files that loaded the earlier steps with `importlib.import_module("01_setup")` and found their
+folders with `__file__`. Neither works in a notebook.
+
+**Fix:** All 8 scripts were rewritten as notebook cells that share one namespace:
+- The `importlib` lines were removed, along with the `setup.`, `data.`, `helpers.` and `m.`
+  prefixes. For example, `data.train_loader` became `train_loader`.
+- Paths built from `__file__` became paths relative to the repo root, such as `Path("datasets")`
+  and `Path("prob1/outputs")`.
+- The `if __name__ == "__main__":` blocks were removed so their code always runs.
+- All imports were moved into the Step 1 cell.
+- The Step 4 test model's variables were renamed with a `smoke_` prefix, so they can't be
+  mistaken for the real model built in Step 5.
+- `prob1/run_all.py` was added so the scripts can still be run from the terminal.
+
+**Check:** Running all 8 steps in order in one shared namespace reproduced every number above,
+including 88.51% test accuracy. The retrained weights, history and both figures were
+byte-for-byte identical to the earlier ones.
 
 ## Observations
 - A simple 2-hidden-layer MLP reaches about 88.5% test accuracy on Fashion MNIST in 20 epochs.

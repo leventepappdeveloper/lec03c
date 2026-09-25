@@ -6,14 +6,11 @@ evaluate_tm(): computes a torchmetrics metric over a whole DataLoader.
 train():       trains a model for n epochs, recording the training loss,
                training metric, and validation metric for each epoch.
 
-Running this file directly does a quick smoke test on a small data subset.
+The end of the cell does a quick smoke test on a small data subset.
+
+Notebook cell 4. Run the cells in order (1-8) from a notebook in the
+repo root; each cell uses names defined by the earlier cells.
 """
-
-import importlib
-
-setup = importlib.import_module("01_setup")
-torch = setup.torch
-device = setup.device
 
 
 def evaluate_tm(model, data_loader, metric):
@@ -56,26 +53,23 @@ def train(model, optimizer, criterion, metric, train_loader, valid_loader,
     return history
 
 
-if __name__ == "__main__":
-    # Smoke test: a throwaway linear model on 2,000 training / 500 validation
-    # images, just to check that the helpers run end to end.
-    data = importlib.import_module("02_load_data")
-    nn, DataLoader = setup.nn, setup.DataLoader
+# Smoke test: a throwaway linear model on 2,000 training / 500 validation
+# images, just to check that the helpers run end to end. The smoke_ prefix
+# keeps these names separate from the real model built in step 5.
+smoke_train = torch.utils.data.Subset(train_data, range(2_000))
+smoke_valid = torch.utils.data.Subset(valid_data, range(500))
+smoke_train_loader = DataLoader(smoke_train, batch_size=32, shuffle=True)
+smoke_valid_loader = DataLoader(smoke_valid, batch_size=32)
 
-    small_train = torch.utils.data.Subset(data.train_data, range(2_000))
-    small_valid = torch.utils.data.Subset(data.valid_data, range(500))
-    small_train_loader = DataLoader(small_train, batch_size=32, shuffle=True)
-    small_valid_loader = DataLoader(small_valid, batch_size=32)
+torch.manual_seed(SEED)
+smoke_model = nn.Sequential(nn.Flatten(), nn.Linear(28 * 28, 10)).to(device)
+smoke_optimizer = torch.optim.SGD(smoke_model.parameters(), lr=0.1)
+smoke_accuracy = torchmetrics.Accuracy(
+    task="multiclass", num_classes=10).to(device)
 
-    torch.manual_seed(setup.SEED)
-    model = nn.Sequential(nn.Flatten(), nn.Linear(28 * 28, 10)).to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
-    xentropy = nn.CrossEntropyLoss()
-    accuracy = setup.torchmetrics.Accuracy(
-        task="multiclass", num_classes=10).to(device)
-
-    history = train(model, optimizer, xentropy, accuracy,
-                    small_train_loader, small_valid_loader, n_epochs=3)
-    print("History keys:", list(history))
-    print("Valid accuracy via evaluate_tm:",
-          f"{evaluate_tm(model, small_valid_loader, accuracy).item():.4f}")
+smoke_history = train(smoke_model, smoke_optimizer, nn.CrossEntropyLoss(),
+                      smoke_accuracy, smoke_train_loader, smoke_valid_loader,
+                      n_epochs=3)
+print("History keys:", list(smoke_history))
+print("Valid accuracy via evaluate_tm:",
+      f"{evaluate_tm(smoke_model, smoke_valid_loader, smoke_accuracy).item():.4f}")

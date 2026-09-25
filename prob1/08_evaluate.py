@@ -5,37 +5,29 @@ Author: Levente Papp
 Loads the weights saved by step 6, reports test-set accuracy, then for the
 first 3 validation images shows the predicted and true classes, the full
 class probabilities, and the top-4 predictions.
+
+Notebook cell 8. Run the cells in order (1-8) from a notebook in the
+repo root; each cell uses names defined by the earlier cells.
 """
 
-import importlib
-from pathlib import Path
-
-setup = importlib.import_module("01_setup")
-data = importlib.import_module("02_load_data")
-helpers = importlib.import_module("04_helpers")
-m = importlib.import_module("05_model")
-torch, device = setup.torch, setup.device
-F = torch.nn.functional
-
-WEIGHTS_PATH = Path(__file__).resolve().parent / "outputs" / "model.pt"
+WEIGHTS_PATH = Path("prob1/outputs/model.pt")
 N_SAMPLES = 3
 TOP_K = 4
 
 if not WEIGHTS_PATH.exists():
-    raise SystemExit(f"{WEIGHTS_PATH} not found -- run 06_train.py first.")
-model = m.model
+    raise SystemExit(f"{WEIGHTS_PATH} not found -- run the step 6 cell (06_train.py) first.")
 model.load_state_dict(torch.load(WEIGHTS_PATH, map_location=device))
-classes = data.train_and_valid_data.classes
+classes = train_and_valid_data.classes
 
 # --- Test-set accuracy ---
-test_acc = helpers.evaluate_tm(model, data.test_loader, m.accuracy).item()
-valid_acc = helpers.evaluate_tm(model, data.valid_loader, m.accuracy).item()
+test_acc = evaluate_tm(model, test_loader, accuracy).item()
+valid_acc = evaluate_tm(model, valid_loader, accuracy).item()
 print(f"Validation accuracy: {valid_acc:.4f}")
-print(f"Test accuracy:       {test_acc:.4f}  ({len(data.test_data):,} images)")
+print(f"Test accuracy:       {test_acc:.4f}  ({len(test_data):,} images)")
 
 # --- Predictions for 3 validation images ---
 model.eval()
-X_new, y_new = next(iter(data.valid_loader))  # valid_loader is not shuffled
+X_new, y_new = next(iter(valid_loader))  # valid_loader is not shuffled
 X_new, y_new = X_new[:N_SAMPLES].to(device), y_new[:N_SAMPLES]
 with torch.no_grad():
     y_pred_logits = model(X_new)

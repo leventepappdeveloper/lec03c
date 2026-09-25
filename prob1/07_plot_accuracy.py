@@ -3,26 +3,20 @@ CSCI E-89 Assignment 03, Problem 1 -- Step 7: Plot accuracy per epoch
 Author: Levente Papp
 
 Plots training and validation accuracy per epoch from the history saved by
-step 6. The figure is saved to prob1/figures/accuracy.png and also shown on
-screen when a display is available.
+step 6. The figure is saved to prob1/figures/accuracy.png and also shown.
+
+Notebook cell 7. Run the cells in order (1-8) from a notebook in the
+repo root; each cell uses names defined by the earlier cells.
 """
 
-import importlib
-import json
-from pathlib import Path
-
-setup = importlib.import_module("01_setup")
-plt, np = setup.plt, setup.np
-
-PROB1_DIR = Path(__file__).resolve().parent
-HISTORY_PATH = PROB1_DIR / "outputs" / "history.json"
-FIG_PATH = PROB1_DIR / "figures" / "accuracy.png"
+HISTORY_PATH = Path("prob1/outputs/history.json")
+FIG_PATH = Path("prob1/figures/accuracy.png")
 
 TRAIN_COLOR = "#2a78d6"  # blue
 VALID_COLOR = "#eb6834"  # orange
 
 if not HISTORY_PATH.exists():
-    raise SystemExit(f"{HISTORY_PATH} not found -- run 06_train.py first.")
+    raise SystemExit(f"{HISTORY_PATH} not found -- run the step 6 cell (06_train.py) first.")
 history = json.loads(HISTORY_PATH.read_text())
 
 train_acc = np.array(history["train_metrics"])
@@ -55,7 +49,7 @@ for side in ("top", "right"):
 ax.legend(loc="lower right", frameon=False)
 fig.tight_layout()
 
-FIG_PATH.parent.mkdir(exist_ok=True)
+FIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 fig.savefig(FIG_PATH, dpi=120)
 print(f"Final training accuracy:   {train_acc[-1]:.4f}")
 print(f"Final validation accuracy: {valid_acc[-1]:.4f}")

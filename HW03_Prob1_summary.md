@@ -158,27 +158,6 @@ scores, so they add up to 1 for each image. The model is confident on the sneake
 and much less sure about the pullover. Pullover, coat and shirt look alike in 28×28 grayscale,
 and Fashion MNIST models usually confuse them most.
 
-### Converting the scripts into notebook cells
-**Problem:** When the scripts were pasted into a Jupyter notebook, the Step 2 cell failed with
-`ModuleNotFoundError: No module named '01_setup'`. The scripts had been written as separate
-files that loaded the earlier steps with `importlib.import_module("01_setup")` and found their
-folders with `__file__`. Neither works in a notebook.
-
-**Fix:** All 8 scripts were rewritten as notebook cells that share one namespace:
-- The `importlib` lines were removed, along with the `setup.`, `data.`, `helpers.` and `m.`
-  prefixes. For example, `data.train_loader` became `train_loader`.
-- Paths built from `__file__` became paths relative to the repo root, such as `Path("datasets")`
-  and `Path("prob1/outputs")`.
-- The `if __name__ == "__main__":` blocks were removed so their code always runs.
-- All imports were moved into the Step 1 cell.
-- The Step 4 test model's variables were renamed with a `smoke_` prefix, so they can't be
-  mistaken for the real model built in Step 5.
-- `prob1/run_all.py` was added so the scripts can still be run from the terminal.
-
-**Check:** Running all 8 steps in order in one shared namespace reproduced every number above,
-including 88.51% test accuracy. The retrained weights, history and both figures were
-byte-for-byte identical to the earlier ones.
-
 ## Observations
 - A simple 2-hidden-layer MLP reaches about 88.5% test accuracy on Fashion MNIST in 20 epochs.
 - Validation accuracy levels off after about 8 epochs while training accuracy keeps rising,
